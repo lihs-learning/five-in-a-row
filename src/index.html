@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>五子棋</title>
+
+    <link rel="stylesheet" href="./css/index.css">
+</head>
+<body>
+
+  <div class="container">
+    <input id="go-register" type="checkbox" style="display: none;">
+    <div class="card">
+      <div class="login-box">
+        <form id="game-info">
+          <h2 style="text-align: center;">五子棋</h2>
+          <div class="hr"></div>
+          <div class="input-group">
+            <div>棋盘大小：</div>
+            <input type="range" min="15" max="25" name="boardSize" value="15" 
+                oninput="document.getElementById('out-board-size').innerText = this.value + 'x' + this.value">
+            <span id="out-board-size">15x15</span>
+          </div>
+
+          <div class="input-group radio-box">
+            <div>游戏模式：</div>
+            <input id="game-mode-PVP" type="radio" name="gameType" value="PVP">
+            <label class="btn" for="game-mode-PVP">PVP</label>
+            <input id="game-mode-PVE" type="radio" name="gameType" value="PVE0">
+            <label class="btn" for="game-mode-PVE">PVE</label>
+          </div>
+
+          <div class="input-group" style="margin-top: 130px;">
+            <label for="go-register" class="btn" onclick="startGame()">开始游戏</label>
+          </div>
+        </form>
+      </div>
+
+      <div class="register-box">
+        <canvas id="cvs">您的浏览器不支持 canvas 请升级浏览器</canvas>
+      </div>
+    </div>
+  </div>
+  <script src="./js/index.js"></script>
+  <script>
+    function startGame() {
+      var gameInfoForm = document.getElementById('game-info');
+      fir.set(gameInfoForm.boardSize.value, gameInfoForm.gameType.value);
+      fir.start();
+    }
+  </script>
+</body>
+</html>
