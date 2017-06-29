@@ -9,6 +9,7 @@ var fir = (function () {
     gameMode: 'PVP'
   }
 
+
   var padding = options.padding;
   var width = options.width;
   var height = options.height;
@@ -19,240 +20,15 @@ var fir = (function () {
   var gameMode = options.gameMode;
 
   var chessboard = [];
-  for (var i = 0; i < rows; i++) {
-    chessboard.push([]);
-    for (var j = 0; j < rows; j++) {
-      chessboard[i][j] = -1;
-    }
-  }
 
-
-  var calcAllWins = function () {
-    var winArr = [];
-    var count = 0;
-    var winPadding = rows - winLen + 1;
-    var i, j, k;
-
-    for (i = 0; i < rows; i++) {
-      winArr.push([]);
-      for (j = 0; j < rows; j++) {
-        winArr[i].push({});
-      }
-    }
-
-    for (i = 0; i < rows; i++) {
-      for (j = 0; j < winPadding; j++) {
-        for (k = 0; k < winLen; k++) {
-          winArr[i][j + k][count] = true;
-        }
-        count++;
-      }
-    }
-
-    for (i = 0; i < rows; i++) {
-      for (j = 0; j < winPadding; j++) {
-        for (k = 0; k < winLen; k++) {
-          winArr[j + k][i][count] = true;
-        }
-        count++;
-      }
-    }
-
-    for (i = 0; i < winPadding; i++) {
-      for (j = 0; j < winPadding; j++) {
-        for (k = 0; k < winLen; k++) {
-          winArr[i + k][j + k][count] = true;
-        }
-        count++;
-      }
-    }
-
-    for (i = winLen - 1; i < rows; i++) {
-      for (j = 0; j < winPadding; j++) {
-        for (k = 0; k < winLen; k++) {
-          winArr[i - k][j + k][count] = true;
-        }
-        count++;
-      }
-    }
-
-    winArr.count = count;
-
-    return winArr;
-  }
-
-
-  var stepEvent = (function () {
-    var player = 0;
-
-    var i, j;
-    // 所有胜利情况
-    var wins = calcAllWins();
-
-    // 在某个胜法的步数
-    var _playerWin = [];
-    for (i = 0; i < 2; i++) {
-      _playerWin.push([]);
-      for (j = 0; j < wins.count; j++) {
-        _playerWin[i].push(0);
-      }
-    }
-
-    var _step = function (x, y) {
-      var k;
-      if (chessboard[x][y] === -1) {
-        chessboard[x][y] = player;
-        draw.step(x, y, player);
-
-        for (k = 0; k < wins.count; k++) {
-          if (wins[x][y][k]) {
-            _playerWin[player][k]++;
-            _playerWin[player ? 0 : 1][k]--;
-            if (_playerWin[player][k] >= winLen) {
-              console.log('player' + (player + 1) + ' win!');
-            }
-          }
-        }
-      }
-    };
-    // PVP local
-    var PVP = function (e) {
-      var x = Math.floor((e.offsetX + rowDiv / 2 - 2 * padding) / rowDiv);
-      var y = Math.floor((e.offsetY + rowDiv / 2 - 2 * padding) / rowDiv);
-      if (chessboard[x][y] !== -1) {
-        return;
-      }
-      _step(x, y);
-      player = player ? 0 : 1;
-    };
-
-    // PVE
-    var PVE0 = (function () {
-      var i, j, m;
-      var isEnvironmentStep = false;
-      var max = 0, u, v;
-      var _playerScore = [];
-      for (m = 0; m < 2; m++) {
-        _playerScore.push([]);
-        for (i = 0; i < rows; i++) {
-          _playerScore[m].push([]);
-          for (var j = 0; j < rows; j++) {
-            _playerScore[m][i].push(0);
-          }
-        }
-      }
-
-      var _eStep = function () {
-        var i, j, k, m;
-        var max = 0, x = 0, y = 0;
-        var player1 = player;
-        var player2 = player ? 0 : 1;
-        // for debug;
-        var max1, max2;
-        // for debug;
-
-        for (var i = 0; i < rows; i++) {
-          for (var j = 0; j < rows; j++) {
-            if (chessboard[i][j] < 0) {
-
-              for (var k = 0; k < wins.count; k++) {
-                if (wins[i][j][k]) {
-                  switch(_playerWin[player1][k]) {
-                    case 1: _playerScore[player1][i][j] += 10;break;
-
-                    case 2: _playerScore[player1][i][j] += 200;break;
-
-                    case 3: _playerScore[player1][i][j] += 1000;break;
-
-                    case 4: _playerScore[player1][i][j] += 5000;break;
-                  }
-
-                  switch(_playerWin[player2][k]) {
-                    case 1: _playerScore[player2][i][j] += 10;break;
-
-                    case 2: _playerScore[player2][i][j] += 200;break;
-
-                    case 3: _playerScore[player2][i][j] += 1000;break;
-
-                    case 4: _playerScore[player2][i][j] += 5000;break;
-                  }
-                }
-              }
-
-              if (_playerScore[player1][i][j] > max) {
-                max = _playerScore[player1][i][j];
-                x = i;
-                y = j;
-                max1 = {x: i + 1, y: j + 1, val: max}
-              }
-
-              if (_playerScore[player2][i][j] > max) {
-                max = _playerScore[player2][i][j];
-                x = i;
-                y = j;
-                max2 = {x: i + 1, y: j + 1, val: max}
-              }
-
-
-            }
-          }
-        }
-
-        console.log('----------------player1----------------');
-        // for (var i = 0; i < rows; i++) {
-        //   console.log(_playerScore[player1][i]);
-        // }
-        console.log(max1);
-        console.log('----------------player2------------------');
-        // for (var i = 0; i < rows; i++) {
-        //   console.log(_playerScore[player2][i]);
-        // }
-        console.log(max2);
-        console.log('----------------------------------------');
-
-        _step(x, y);
-        player = player ? 0 : 1;
-        isEnvironmentStep = false;
-      }
-
-      return function (e) {
-        var x, y, k;
-        x = Math.floor((e.offsetX + rowDiv / 2 - 2 * padding) / rowDiv);
-        y = Math.floor((e.offsetY + rowDiv / 2 - 2 * padding) / rowDiv);
-        if (chessboard[x][y] !== -1) {
-          return;
-        }
-        if (isEnvironmentStep) {
-          return;
-        }
-        else {
-          _step(x, y);
-          player = player ? 0 : 1;
-          isEnvironmentStep = true;
-          setTimeout(_eStep, Math.floor(Math.random() * 1000));
-        }
-      }
-    })();
-
-    var PVE1 = (function () {
-
-      return function (e) {
-        
-      }
-    })();
-
-    // PVP network
-
-
-    return {
-      PVP: PVP, PVE0: PVE0
-    }
-  })();
 
   // start
   var imgUrlList = [];
 
   var start = function () {
+    draw(function (ctx) {
+      ctx.clearRect(0, 0, width, height);
+    })
 
     var count = 0;
     var imgResources = [];
@@ -328,11 +104,244 @@ var fir = (function () {
 
   var init = function () {
 
+    for (var i = 0; i < rows; i++) {
+      chessboard.push([]);
+      for (var j = 0; j < rows; j++) {
+        chessboard[i][j] = -1;
+      }
+    }
+
+
+    var calcAllWins = function () {
+      var winArr = [];
+      var count = 0;
+      var winPadding = rows - winLen + 1;
+      var i, j, k;
+
+      for (i = 0; i < rows; i++) {
+        winArr.push([]);
+        for (j = 0; j < rows; j++) {
+          winArr[i].push({});
+        }
+      }
+
+      for (i = 0; i < rows; i++) {
+        for (j = 0; j < winPadding; j++) {
+          for (k = 0; k < winLen; k++) {
+            winArr[i][j + k][count] = true;
+          }
+          count++;
+        }
+      }
+
+      for (i = 0; i < rows; i++) {
+        for (j = 0; j < winPadding; j++) {
+          for (k = 0; k < winLen; k++) {
+            winArr[j + k][i][count] = true;
+          }
+          count++;
+        }
+      }
+
+      for (i = 0; i < winPadding; i++) {
+        for (j = 0; j < winPadding; j++) {
+          for (k = 0; k < winLen; k++) {
+            winArr[i + k][j + k][count] = true;
+          }
+          count++;
+        }
+      }
+
+      for (i = winLen - 1; i < rows; i++) {
+        for (j = 0; j < winPadding; j++) {
+          for (k = 0; k < winLen; k++) {
+            winArr[i - k][j + k][count] = true;
+          }
+          count++;
+        }
+      }
+
+      winArr.count = count;
+
+      return winArr;
+    }
+
+
+    var stepEvent = (function () {
+      var player = 0;
+
+      var i, j;
+      // 所有胜利情况
+      var wins = calcAllWins();
+
+      // 在某个胜法的步数
+      var _playerWin = [];
+      for (i = 0; i < 2; i++) {
+        _playerWin.push([]);
+        for (j = 0; j < wins.count; j++) {
+          _playerWin[i].push(0);
+        }
+      }
+
+      var _step = function (x, y) {
+        var k;
+        if (chessboard[x][y] === -1) {
+          chessboard[x][y] = player;
+          draw.step(x, y, player);
+
+          for (k = 0; k < wins.count; k++) {
+            if (wins[x][y][k]) {
+              _playerWin[player][k]++;
+              _playerWin[player ? 0 : 1][k]--;
+              if (_playerWin[player][k] >= winLen) {
+                // console.log('player' + (player + 1) + ' win!');
+                alert('player' + (player + 1) + ' win!');
+                fir.start();
+              }
+            }
+          }
+        }
+      };
+      // PVP local
+      var PVP = function (e) {
+        var x = Math.floor((e.offsetX + rowDiv / 2 - 2 * padding) / rowDiv);
+        var y = Math.floor((e.offsetY + rowDiv / 2 - 2 * padding) / rowDiv);
+        if (chessboard[x][y] !== -1) {
+          return;
+        }
+        _step(x, y);
+        player = player ? 0 : 1;
+      };
+
+      // PVE
+      var PVE0 = (function () {
+        var i, j, m;
+        var isEnvironmentStep = false;
+        var max = 0, u, v;
+        var _playerScore = [];
+        for (m = 0; m < 2; m++) {
+          _playerScore.push([]);
+          for (i = 0; i < rows; i++) {
+            _playerScore[m].push([]);
+            for (var j = 0; j < rows; j++) {
+              _playerScore[m][i].push(0);
+            }
+          }
+        }
+
+        var _eStep = function () {
+          var i, j, k, m;
+          var max = 0, x = 0, y = 0;
+          var player1 = player;
+          var player2 = player ? 0 : 1;
+          // for debug;
+          var max1, max2;
+          // for debug;
+
+          for (var i = 0; i < rows; i++) {
+            for (var j = 0; j < rows; j++) {
+              if (chessboard[i][j] < 0) {
+
+                for (var k = 0; k < wins.count; k++) {
+                  if (wins[i][j][k]) {
+                    switch(_playerWin[player1][k]) {
+                      case 1: _playerScore[player1][i][j] += 10;break;
+
+                      case 2: _playerScore[player1][i][j] += 200;break;
+
+                      case 3: _playerScore[player1][i][j] += 1000;break;
+
+                      case 4: _playerScore[player1][i][j] += 5000;break;
+                    }
+
+                    switch(_playerWin[player2][k]) {
+                      case 1: _playerScore[player2][i][j] += 10;break;
+
+                      case 2: _playerScore[player2][i][j] += 200;break;
+
+                      case 3: _playerScore[player2][i][j] += 1000;break;
+
+                      case 4: _playerScore[player2][i][j] += 5000;break;
+                    }
+                  }
+                }
+
+                if (_playerScore[player1][i][j] > max) {
+                  max = _playerScore[player1][i][j];
+                  x = i;
+                  y = j;
+                  max1 = {x: i + 1, y: j + 1, val: max}
+                }
+
+                if (_playerScore[player2][i][j] > max) {
+                  max = _playerScore[player2][i][j];
+                  x = i;
+                  y = j;
+                  max2 = {x: i + 1, y: j + 1, val: max}
+                }
+
+
+              }
+            }
+          }
+
+          console.log('----------------player1----------------');
+          // for (var i = 0; i < rows; i++) {
+          //   console.log(_playerScore[player1][i]);
+          // }
+          console.log(max1);
+          console.log('----------------player2------------------');
+          // for (var i = 0; i < rows; i++) {
+          //   console.log(_playerScore[player2][i]);
+          // }
+          console.log(max2);
+          console.log('----------------------------------------');
+
+          _step(x, y);
+          player = player ? 0 : 1;
+          isEnvironmentStep = false;
+        }
+
+        return function (e) {
+          var x, y, k;
+          x = Math.floor((e.offsetX + rowDiv / 2 - 2 * padding) / rowDiv);
+          y = Math.floor((e.offsetY + rowDiv / 2 - 2 * padding) / rowDiv);
+          if (chessboard[x][y] !== -1) {
+            return;
+          }
+          if (isEnvironmentStep) {
+            return;
+          }
+          else {
+            _step(x, y);
+            player = player ? 0 : 1;
+            isEnvironmentStep = true;
+            setTimeout(_eStep, Math.floor(Math.random() * 1000));
+          }
+        }
+      })();
+
+      var PVE1 = (function () {
+
+        return function (e) {
+          
+        }
+      })();
+
+      // PVP network
+
+
+      return {
+        PVP: PVP, PVE0: PVE0
+      }
+    })();
+
+
     canvas.onclick = stepEvent[gameMode];
 
     // draw chessboard
     draw(function (ctx) {
-      ctx.fillStyle = 'rgba(255,255,255,0.7)';
+      ctx.fillStyle = 'rgba(255,255,255,0.3)';
       ctx.fillRect(padding, padding, width - 2 * padding, height - 2 * padding);
     });
     draw(function (ctx) {
@@ -353,6 +362,9 @@ var fir = (function () {
 
   var set = function (size, mode) {
     gameMode = mode;
+    rows = size;
+    rowDiv = (width - 4 * padding) / (rows - 1);
+    chesspiece = rowDiv / 2 * 0.8;
   }
 
   return {

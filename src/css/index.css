@@ -6,7 +6,7 @@ html, body {
 }
 
 body {
-  background: #eeeeee;
+  background: #EEEEEE;
   padding: 0;
   margin: 0;
 }
@@ -125,14 +125,14 @@ button:focus {
 .card > .login-box form {
     background: #fff;
     color: #000;
-    box-shadow: 4px 4px 10px #333333;
+    box-shadow: 4px 4px 20px #333333;
 }
 
 .card > .register-box {
     background: #fff;
     color: #000;
     transform: rotateY(180deg);
-    box-shadow: 4px 4px 10px #333333;
+    box-shadow: 4px 4px 20px #333333;
 }
 
 .card form {
