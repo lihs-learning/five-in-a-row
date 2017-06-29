@@ -49,6 +49,10 @@
       var gameInfoForm = document.getElementById('game-info');
       fir.set(gameInfoForm.boardSize.value, gameInfoForm.gameType.value);
       fir.start();
+
+      setTimeout(function () {
+        document.getElementById('game-info').remove();
+      }, 600);
     }
   </script>
 </body>
